@@ -1,7 +1,7 @@
 #!/bin/bash
 
 folder=*.zip
-directory=$(basename "$folder" .zip)
+directory=$(basename $folder .zip)
 unzip $folder
 cd $directory
 count=`ls *.c* | wc -l`
@@ -12,12 +12,12 @@ qrels="./qrels"
 
 if [ $count != 0 ]
 then 
-	if [$1 == 'const']
+	if [ $1 == "const" ]
 	then
 		inputDir=$2
 		make bm25_constIndex
 		./constIndex --input $inputDir --output $outputDir
-	elif [$1 == 'run']
+	elif [ $1 == "run" ]
 	then
 		inputDir=$2
 		topicFile=$3
