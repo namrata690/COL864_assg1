@@ -1,36 +1,27 @@
 #!/bin/bash
-while test $# -gt 0; do
-	case "$1" in
-	        --inputDir)
-                    shift
-		    if test $# -gt 0; then
-       			 input=$1
-      		    else
-        		 echo "no input_dir specified"
-        		 exit 1
-      		    fi
-                    shift
-                    ;;
-                --outputDir)
-                    shift
-                    if test $# -gt 0; then
-        		output=$1
-      		    else
-             		echo "no output_dir specified"
-        		exit 1
-      		    fi
-                    shift
-                    ;;
-		*)
-                   echo "$1 is not a recognized flag!"
-                   exit 1;
-                   ;;
-	esac
-done  
 
-#cd $output
-#java -cp "bin:lib/*" IndexTREC -docs $input
+folder=*.zip
+directory=$(basename "$folder" .zip)
+unzip $folder
+cd $directory
+count=`ls *.c* | wc -l`
 
-#time java const $input $output 
+inputDir=$1
+outputDir="./out"
+topicFile=$2
 
+if [ $count != 0 ]
+then 
+	make bm25_constIndex
+	./constIndex --input $inputDir --output $outputDir
+	make bm25_run
+	./bm25 --input $inputDir --topic $topicFile --output $outputDir
+	out="./bm25.out"
+	cd trec_eval-master
+	trec_eval -q -m ndcg_cut $qrels $out
+#else
+#	ant compile
+#	java constIndex --input $inputDir --output $outputDir
+#	java bm25 --input $inputDir --topic $topicFile --output $outputDir
+fi 
 
