@@ -6,19 +6,29 @@ unzip $folder
 cd $directory
 count=`ls *.c* | wc -l`
 
-inputDir=$1
 outputDir="./out"
-topicFile=$2
+trecDir="./trec_eval-master"
+qrels="./qrels"
 
 if [ $count != 0 ]
 then 
-	make bm25_constIndex
-	./constIndex --input $inputDir --output $outputDir
-	make bm25_run
-	./bm25 --input $inputDir --topic $topicFile --output $outputDir
-	out="./bm25.out"
-	cd trec_eval-master
-	trec_eval -q -m ndcg_cut $qrels $out
+	if [$1 == 'const']
+	then
+		inputDir=$2
+		make bm25_constIndex
+		./constIndex --input $inputDir --output $outputDir
+	elif [$1 == 'run']
+	then
+		inputDir=$2
+		topicFile=$3
+		make bm25_run
+		./bm25 --input $inputDir --topic $topicFile --output $outputDir
+		out="./bm25.out"
+		cd $trecDir
+		trec_eval -q -m ndcg_cut $qrels $out
+	else
+		echo "invalid argument"
+	fi
 #else
 #	ant compile
 #	java constIndex --input $inputDir --output $outputDir
