@@ -1,0 +1,35 @@
+#!/bin/bash
+while test $# -gt 0; do
+	case "$1" in
+	        --qrel)
+                    shift
+		    if test $# -gt 0; then
+       			 qrels=$1
+      		    else
+        		 echo "no qrel_file specified"
+        		 exit 1
+      		    fi
+                    shift
+                    ;;
+                --output)
+                    shift
+                    if test $# -gt 0; then
+        		output=$1
+      		    else
+             		echo "no output_dir specified"
+        		exit 1
+      		    fi
+                    shift
+                    ;;
+		*)
+                   echo "$1 is not a recognized flag!"
+                   exit 1;
+                   ;;
+	esac
+done
+
+#from trec_eval src directory  
+
+./trec_eval -q -m ndcg_cut $qrels $output
+
+

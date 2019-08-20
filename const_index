@@ -1,0 +1,36 @@
+#!/bin/bash
+while test $# -gt 0; do
+	case "$1" in
+	        --inputDir)
+                    shift
+		    if test $# -gt 0; then
+       			 input=$1
+      		    else
+        		 echo "no input_dir specified"
+        		 exit 1
+      		    fi
+                    shift
+                    ;;
+                --outputDir)
+                    shift
+                    if test $# -gt 0; then
+        		output=$1
+      		    else
+             		echo "no output_dir specified"
+        		exit 1
+      		    fi
+                    shift
+                    ;;
+		*)
+                   echo "$1 is not a recognized flag!"
+                   exit 1;
+                   ;;
+	esac
+done  
+
+#cd $output
+#java -cp "bin:lib/*" IndexTREC -docs $input
+
+#time java const $input $output 
+
+

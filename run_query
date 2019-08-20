@@ -1,0 +1,60 @@
+#!/bin/bash
+
+system_name=$1
+shift
+while test $# -gt 0; do
+	case "$1" in
+	        --inputDir)
+                    shift
+                    if test $# -gt 0; then
+       			 input=$1
+      		    else
+        		 echo "no input_dir specified"
+        		 exit 1
+      		    fi
+                    shift
+                    ;;
+                --topicFile)
+                    shift
+                    if test $# -gt 0; then
+       			 topic=$1
+      		    else
+        		 echo "no topic_file specified"
+        		 exit 1
+      		    fi
+                    shift
+                    ;;
+		--outputDir)
+                    shift
+                    if test $# -gt 0; then
+       			 output=$1
+      		    else
+        		 echo "no output_dir specified"
+        		 exit 1
+      		    fi
+                    shift
+                    ;;
+		--depth)
+                    shift
+                    if test $# -gt 0; then
+       			 depth=$1
+      		    else
+        		 echo "depth not specified"
+        		 exit 1
+      		    fi
+                    shift
+                    ;;
+                *)
+                   echo "$1 is not a recognized flag!"
+                   exit 1;
+                   ;;
+	esac
+done
+
+make  
+
+#java -cp "bin:lib/*" BatchSearch -index /path/to/index -queries $topic -simfn bm25 > bm25
+
+#java $system_name -index $input -queries $topic > $output 
+
+#time ./$system_name -index $input -queries $topic > $output 
