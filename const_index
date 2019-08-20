@@ -10,8 +10,8 @@ cd $directory
 count=`ls *.c* | wc -l`
 
 outputDir="./out"
-trecDir="./trec_eval-master"
-qrels="./qrels"
+trecDir="./trec_eval-master"    #trec_eval source code directory
+qrels="./qrels"			#qrel file
 
 if [ $count != 0 ]
 then 
@@ -26,7 +26,7 @@ then
 		topicFile=$3
 		make bm25_run
 		./bm25 --input $inputDir --topic $topicFile --output $outputDir
-		out="./bm25.out"
+		out="./bm25.out"    #name of the output file in which ranked documents are listed according to trec_eval format
 		cd $trecDir
 		trec_eval -q -m ndcg_cut $qrels $out
 	else
