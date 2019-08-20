@@ -33,8 +33,8 @@ then
 	then
 		topicFile=$2
 		make bm25_run
-		./bm25_run --input ${index_file} --topic $topicFile --output ${outputDir}/retrieval_out
 		out=${outputDir}/retrieval_out    #name of the output file in which ranked documents are listed according to trec_eval format
+		./bm25_run --input ${index_file} --topic $topicFile --output ${out}
 		cd $trecDir
 		trec_eval -q -m ndcg_cut $qrels $out
 	else
