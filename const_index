@@ -2,7 +2,10 @@
 
 folder=*.zip
 directory=$(basename $folder .zip)
-unzip $folder
+if [ ! -d "$directory" ]
+then 
+	unzip $folder
+fi
 cd $directory
 count=`ls *.c* | wc -l`
 
