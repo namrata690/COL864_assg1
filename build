@@ -45,7 +45,7 @@ then
 			return
 		else		
 			printf "F, " >> ${RES_CSV}		
-			\time -f "%e" ./Indexer --input $inputDir --output ${index_file} >> ${RES_CSV}
+			command time -f "%e" ./Indexer --input $inputDir --output ${index_file} >> ${RES_CSV}
 			printf ", " >> ${RES_CSV}
         		printf "\n"
 		fi
@@ -68,7 +68,7 @@ then
 			printf "F, " >> ${RES_CSV}
 	
 			out=${outputDir}/retrieval_out    #name of the output file in which ranked documents are listed according to trec_eval format
-			\time -f "%e" ./bm25_run --input ${index_file} --topic $topicFile --output ${out} >> ${RES_CSV}
+			command time -f "%e" ./bm25_run --input ${index_file} --topic $topicFile --output ${out} >> ${RES_CSV}
 			printf ", " >> ${RES_CSV}
         		#printf "\n"
 			cd $trecDir
