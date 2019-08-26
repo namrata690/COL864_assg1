@@ -41,11 +41,11 @@ then
 	else
 		if [[ ! -f Indexer ]]; then
 			printf "T, " >> ${RES_CSV}
-			echo -e "Indexer file not found"
+			echo "Indexer file not found"
 			return
 		else		
 			printf "F, " >> ${RES_CSV}		
-			command time -f "%e" ./Indexer --input $inputDir --output ${index_file} >> ${RES_CSV}
+			timeout 43200 time -f "%e" ./Indexer --input $inputDir --output ${index_file} 2>>&${RES_CSV}
 			printf ", " >> ${RES_CSV}
         		printf "\n"
 		fi
@@ -57,18 +57,18 @@ then
 	make bm25_run || RUN_BUILD_FAIL=1
 	if [[ -n ${RUN_BUILD_FAIL} ]]; then
 		printf "T, " >> ${RES_CSV}
-		echo -e "Run build failed"
+		echo "Run build failed"
 		return
 	else
 		if [[ ! -f bm25_run ]]; then
 			printf "T, " >> ${RES_CSV}
-			echo -e "bm25_run file not found"
+			echo "bm25_run file not found"
 			return
 		else		
 			printf "F, " >> ${RES_CSV}
 	
 			out=${outputDir}/retrieval_out    #name of the output file in which ranked documents are listed according to trec_eval format
-			command time -f "%e" ./bm25_run --input ${index_file} --topic $topicFile --output ${out} >> ${RES_CSV}
+			timeout 43200 time -f "%e" ./bm25_run --input ${index_file} --topic $topicFile --output ${out} 2>>&${RES_CSV}
 			printf ", " >> ${RES_CSV}
         		#printf "\n"
 			cd $trecDir
