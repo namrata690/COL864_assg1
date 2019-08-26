@@ -36,11 +36,13 @@ then
 	make Indexer || INDEX_BUILD_FAIL=1
 	if [[ -n ${INDEX_BUILD_FAIL} ]]; then
 		printf "T, " >> ${RES_CSV}
-		echo -e "index build failed"
+		echo "index build failed"
+		return
 	else
 		if [[ ! -f Indexer ]]; then
 			printf "T, " >> ${RES_CSV}
 			echo -e "Indexer file not found"
+			return
 		else		
 			printf "F, " >> ${RES_CSV}		
 			\time -f "%e" ./Indexer --input $inputDir --output ${index_file} >> ${RES_CSV}
@@ -56,10 +58,12 @@ then
 	if [[ -n ${RUN_BUILD_FAIL} ]]; then
 		printf "T, " >> ${RES_CSV}
 		echo -e "Run build failed"
+		return
 	else
 		if [[ ! -f bm25_run ]]; then
 			printf "T, " >> ${RES_CSV}
 			echo -e "bm25_run file not found"
+			return
 		else		
 			printf "F, " >> ${RES_CSV}
 	
@@ -75,6 +79,7 @@ then
 	fi
 else
 	echo "invalid argument"
+	return
 fi
 #else
 #	ant compile
