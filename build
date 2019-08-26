@@ -9,7 +9,7 @@ set -x
 
 directory=$(pwd)
 #echo $directory
-count=`ls *.c* | wc -l`
+#count=`ls *.c* | wc -l`
 
 outputDir=${directory}/out # directory to store the document index
 mkdir -p ${outputDir}
@@ -21,28 +21,27 @@ mkdir -p ${trecDir}
 
 qrels=$trecDir/qrels			#qrel file
 #cat $qrels
+RES_CSV=$directory/result.csv			#results file
+echo "Submission ID, Build error?, Time to Index, Time to run query, NDCG50 score" > $RES_CSV  #first row
 
-if [ $count != 0 ]
-then 
-	if [ $1 == "construct_ind" ]
-	then
-		inputDir=$2
-		make Indexer
-		./Indexer --input $inputDir --output ${index_file}
-	elif [ $1 == "run_query" ]
-	then
-		topicFile=$2
-		make bm25_run
-		out=${outputDir}/retrieval_out    #name of the output file in which ranked documents are listed according to trec_eval format
-		./bm25_run --input ${index_file} --topic $topicFile --output ${out}
-		cd $trecDir
-		./trec_eval -q -m ndcg_cut.50 $qrels $out
-	else
-		echo "invalid argument"
-	fi
+if [ $1 == "construct_ind" ]
+then
+	inputDir=$2
+	make Indexer
+	\time -f "%e" ./Indexer --input $inputDir --output ${index_file} > $RES_CSV
+elif [ $1 == "run_query" ]
+then
+	topicFile=$2
+	make bm25_run
+	out=${outputDir}/retrieval_out    #name of the output file in which ranked documents are listed according to trec_eval format
+	\time -f "%e" ./bm25_run --input ${index_file} --topic $topicFile --output ${out} > $RES_CSV
+	cd $trecDir
+	./trec_eval -q -m ndcg_cut.50 $qrels $out > $RES_CSV
+else
+	echo "invalid argument"
+fi
 #else
 #	ant compile
 #	java constIndex --input $inputDir --output $outputDir
 #	java bm25 --input $inputDir --topic $topicFile --output $outputDir
-fi 
 
