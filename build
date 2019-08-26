@@ -11,32 +11,65 @@ directory=$(pwd)
 #echo $directory
 #count=`ls *.c* | wc -l`
 
-outputDir=${directory}/out # directory to store the document index
+outputDir=${directory}/out 			#directory to store the document index
 mkdir -p ${outputDir}
 index_file=$outputDir/index_file
 #touch $index_file
 
-trecDir=$directory/trec_eval-master    #trec_eval source code directory
+trecDir=$directory/trec_eval-master    		#trec_eval source code directory
 mkdir -p ${trecDir}
 
-qrels=$trecDir/qrels			#qrel file
+qrels=$trecDir/qrels				#qrel file
 #cat $qrels
 RES_CSV=$directory/result.csv			#results file
-echo "Submission ID, Build error?, Time to Index, Time to run query, NDCG50 score" > $RES_CSV  #first row
+
 
 if [ $1 == "construct_ind" ]
 then
+	printf "Submission ID, Index Build error?, Time to Index, Run Build error?, Time to run queries, NDCG50 score" > ${RES_CSV}  #first row of results file
+	printf "\n%s, ${directory}" >> ${RES_CSV}	
 	inputDir=$2
-	make Indexer
-	\time -f "%e" ./Indexer --input $inputDir --output ${index_file} > $RES_CSV
+	unset INDEX_BUILD_FAIL
+	make Indexer || INDEX_BUILD_FAIL=1
+	if [[ -n ${INDEX_BUILD_FAIL} ]]; then
+		printf "T, " >> ${RES_CSV}
+		echo -e "index build failed"
+	else
+		if [[ ! -f Indexer ]]; then
+			printf "T, " >> ${RES_CSV}
+			echo -e "Indexer file not found"
+		else		
+			printf "F, " >> ${RES_CSV}		
+			\time -f "%e" ./Indexer --input $inputDir --output ${index_file} >> ${RES_CSV}
+			printf ", " >> ${RES_CSV}
+        		printf "\n"
+		fi
+	fi
 elif [ $1 == "run_query" ]
 then
 	topicFile=$2
-	make bm25_run
-	out=${outputDir}/retrieval_out    #name of the output file in which ranked documents are listed according to trec_eval format
-	\time -f "%e" ./bm25_run --input ${index_file} --topic $topicFile --output ${out} > $RES_CSV
-	cd $trecDir
-	./trec_eval -q -m ndcg_cut.50 $qrels $out > $RES_CSV
+	unset RUN_BUILD_FAIL
+	make bm25_run || RUN_BUILD_FAIL=1
+	if [[ -n ${RUN_BUILD_FAIL} ]]; then
+		printf "T, " >> ${RES_CSV}
+		echo -e "Run build failed"
+	else
+		if [[ ! -f bm25_run ]]; then
+			printf "T, " >> ${RES_CSV}
+			echo -e "bm25_run file not found"
+		else		
+			printf "F, " >> ${RES_CSV}
+	
+			out=${outputDir}/retrieval_out    #name of the output file in which ranked documents are listed according to trec_eval format
+			\time -f "%e" ./bm25_run --input ${index_file} --topic $topicFile --output ${out} >> ${RES_CSV}
+			printf ", " >> ${RES_CSV}
+        		#printf "\n"
+			cd $trecDir
+			./trec_eval -m ndcg_cut.50 $qrels $out > result
+			grep "ndcg_cut*" result | tail -1 | awk '{ printf("%f",$3) }' >> ${RES_CSV}
+        		#printf "\n"
+		fi
+	fi
 else
 	echo "invalid argument"
 fi
@@ -44,4 +77,3 @@ fi
 #	ant compile
 #	java constIndex --input $inputDir --output $outputDir
 #	java bm25 --input $inputDir --topic $topicFile --output $outputDir
-
