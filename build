@@ -21,8 +21,11 @@ mkdir -p ${trecDir}
 
 qrels=$trecDir/qrels				#qrel file
 #cat $qrels
+
 RES_CSV=$directory/result.csv			#results file
 
+module load compiler/gcc/7.1.0/compilervars
+module load lib/boost/1.64.0/gnu1
 
 if [ $1 == "construct_ind" ]
 then
