@@ -17,20 +17,23 @@ index_file=$outputDir/index_file
 #touch $index_file
 
 trecDir=$directory/trec_eval-master    		#trec_eval source code directory
-mkdir -p ${trecDir}
+#mkdir -p ${trecDir}
 
-qrels=$trecDir/qrels				#qrel file
+qrels=$directory/qrel				#qrel file
 #cat $qrels
 
 RES_CSV=$directory/result.csv			#results file
 
-module load compiler/gcc/7.1.0/compilervars
-module load lib/boost/1.64.0/gnu1
+#module load compiler/gcc/7.1.0/compilervars
+#module load lib/boost/1.64.0/gnu1
+
+IFS=$'\n'
 
 if [ $1 == "construct_ind" ]
 then
 	printf "Submission ID, Index Build error?, Time to Index, Run Build error?, Time to run queries, NDCG50 score" > ${RES_CSV}  #first row of results file
-	printf "\n%s, ${directory}" >> ${RES_CSV}	
+	printf "\n${directory##*/}" >> ${RES_CSV}
+	printf ", " >> ${RES_CSV}
 	inputDir=$2
 	unset INDEX_BUILD_FAIL
 	make Indexer || INDEX_BUILD_FAIL=1
@@ -45,10 +48,11 @@ then
 			return
 		else		
 			printf "F, " >> ${RES_CSV}		
-			timeout 43200 time -f "%e" ./Indexer --input $inputDir --output ${index_file} 2>>&${RES_CSV}
+			timeout 600 time -f "%e" ./Indexer --input $inputDir --output ${index_file} 2>result_temp
+			tr -d '\n\t\r' < result_temp >> ${RES_CSV}
+			rm result_temp
 			printf ", " >> ${RES_CSV}
-        		printf "\n"
-		fi
+        	fi
 	fi
 elif [ $1 == "run_query" ]
 then
@@ -68,15 +72,21 @@ then
 			printf "F, " >> ${RES_CSV}
 	
 			out=${outputDir}/retrieval_out    #name of the output file in which ranked documents are listed according to trec_eval format
-			timeout 43200 time -f "%e" ./bm25_run --input ${index_file} --topic $topicFile --output ${out} 2>>&${RES_CSV}
-			printf ", " >> ${RES_CSV}
-        		#printf "\n"
+			timeout 600 time -f "%e" ./bm25_run --input ${index_file} --topic $topicFile --output ${out} 2>result_temp
+			tr -d '\n\t\r' < result_temp >> ${RES_CSV}			
 			cd $trecDir
-			./trec_eval -m ndcg_cut.50 $qrels $out > result
-			grep "ndcg_cut*" result | tail -1 | awk '{ printf("%f",$3) }' >> ${RES_CSV}
+			printf ", " >> ${RES_CSV}
+			./trec_eval -m ndcg_cut.50 $qrels $out > ../result_temp
+			grep "ndcg_cut*" ../result_temp | tail -1 | awk '{ printf $3 }' > ../result_temp2
+			tr -d '\n\r\t' < ../result_temp2 >> ${RES_CSV}
+			rm ../result_temp*
         		#printf "\n"
 		fi
 	fi
+elif [ $1 == "clear" ]
+then
+	rm -r out
+	rm result*
 else
 	echo "invalid argument"
 	return
